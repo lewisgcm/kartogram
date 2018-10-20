@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { HttpClient } from './support/httpClient';
 import { container } from './inverisfy.config';
 
@@ -10,7 +11,7 @@ const httpClient = container.get<HttpClient>(HttpClient);
 
 httpClient.Get('https://www.google.co.uk').then(
     (data) => {
-        console.log(data);
+        console.log("Hello World");
     }
 )
 app.use( express.static( __dirname + '/public') );
