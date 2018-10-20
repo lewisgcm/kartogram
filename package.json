@@ -1,14 +1,26 @@
 {
+  "scripts": {
+    "build": "webpack --watch",
+    "node": "nodemon build/server.js",
+    "dev": "concurrently 'npm:build' 'npm:node'"
+  },
   "dependencies": {
     "@types/express": "^4.16.0",
     "@types/react": "^16.4.18",
     "@types/react-dom": "^16.0.9",
+    "@types/request": "^2.47.1",
+    "@types/request-promise-native": "^1.0.15",
     "express": "^4.16.4",
+    "inversify": "^5.0.1",
     "react": "^16.5.2",
-    "react-dom": "^16.5.2"
+    "react-dom": "^16.5.2",
+    "reflect-metadata": "^0.1.12",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
+    "concurrently": "^4.0.1",
     "copy-webpack-plugin": "^4.5.4",
     "nodemon": "^1.18.4",
     "source-map-loader": "^0.2.4",

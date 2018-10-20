@@ -7,25 +7,22 @@ var base_config = {
     },
     module: {
         rules: [
-            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
             { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
-
-            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
         ]
     }
 };
 
 var ui = Object.assign({}, base_config, {
-    entry: './src/ui/index.tsx',
+    entry: './src/public/index.tsx',
     output: {
         path: __dirname + "/build/public",
-        filename: "ui-bundle.js"
+        filename: "bundle.js"
     },
     target: 'web',
     plugins: [
         new CopyWebpackPlugin([
-            { from: 'ui/index.html', context: 'src' }
+            { from: 'public/index.html', context: 'src' }
         ])
     ]
 });
@@ -36,7 +33,11 @@ var server = Object.assign({}, base_config, {
         path: __dirname + "/build",
         filename: "server.js"
     },
-    target: 'node'
+    target: 'node',
+    node: {
+        __dirname: false,
+        __filename: false,
+    }
 });
 
 module.exports = [
