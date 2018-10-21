@@ -9,12 +9,12 @@ import { IVirtualNode, VirtualNodeType } from 'models/graph';
 
 @injectable()
 export class GraphService {
-    
+
     constructor(
         @inject(HttpClient) private _httpClient: HttpClient
-    ) {}
+    ) { }
 
-    getGraphs(): Observable<IVirtualNode[]> {
+    getGraphs(): Observable<IVirtualNode> {
         return forkJoin([
             this.getNamespaces(),
             this.getServices(),
@@ -22,39 +22,47 @@ export class GraphService {
         ]).pipe(
             map(
                 ([namespaces, services, pods]) => {
-                    return namespaces.map(
-                        (namespace) => {
-                            return {
-                                uid: namespace.metadata.uid,
-                                children: services
-                                    .filter(
-                                        (service) => service.metadata.namespace == namespace.metadata.name
-                                    ).map(
-                                        (service) => {
-                                            return {
-                                                uid: service.metadata.uid,
-                                                type: VirtualNodeType.Service,
-                                                name: service.metadata.name,
-                                                children: pods
-                                                    .filter(
-                                                        (pod) => pod.metadata.namespace == namespace.metadata.name
-                                                    ).map(
-                                                        (pod) => {
-                                                            return {
-                                                                uid: pod.metadata.uid,
-                                                                type: VirtualNodeType.Pod,
-                                                                name: pod.metadata.name,
-                                                            } as IVirtualNode;
-                                                        }
-                                                    )
-                                            } as IVirtualNode;
-                                        }
-                                    ),
-                                type: VirtualNodeType.Namespace,
-                                name: namespace.metadata.name
-                            } as IVirtualNode;
-                        }
-                    )
+                    return {
+                        name: 'cluster',
+                        uid: '',
+                        type: 0,
+                        value: 0,
+                        children: namespaces.map(
+                            (namespace) => {
+                                return {
+                                    uid: namespace.metadata.uid,
+                                    value: 0,
+                                    children: services
+                                        .filter(
+                                            (service) => service.metadata.namespace == namespace.metadata.name
+                                        ).map(
+                                            (service) => {
+                                                return {
+                                                    uid: service.metadata.uid,
+                                                    type: VirtualNodeType.Service,
+                                                    name: service.metadata.name,
+                                                    children: pods
+                                                        .filter(
+                                                            (pod) => pod.metadata.namespace == namespace.metadata.name
+                                                        ).map(
+                                                            (pod) => {
+                                                                return {
+                                                                    uid: pod.metadata.uid,
+                                                                    type: VirtualNodeType.Pod,
+                                                                    name: pod.metadata.name,
+                                                                    value: 0,
+                                                                } as IVirtualNode;
+                                                            }
+                                                        )
+                                                } as IVirtualNode;
+                                            }
+                                        ),
+                                    type: VirtualNodeType.Namespace,
+                                    name: namespace.metadata.name
+                                } as IVirtualNode;
+                            }
+                        )
+                    } as IVirtualNode;
                 }
             )
         );

@@ -8,7 +8,7 @@ ReactDOM.render(
     <div>
         <Hello compiler="TypeScript" framework="React" />
         <h1>Graph</h1>
-        <VirtualGraph />
+        <VirtualGraph width={960} height={500} />
     </div>,
     document.getElementById("example")
 );

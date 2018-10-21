@@ -8,5 +8,6 @@ export interface IVirtualNode {
     uid: string
     children?: IVirtualNode[]
     type: VirtualNodeType
-    name: string
+    name: string,
+    value: number
 }

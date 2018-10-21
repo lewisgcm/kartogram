@@ -1,55 +1,92 @@
 import * as React from 'react';
-import { pack } from 'd3';
+import {
+    pack,
+    hierarchy,
+    zoom,
+    event,
+    select,
+    ZoomBehavior,
+    PackLayout,
+    HierarchyCircularNode
+} from 'd3';
 
 import { HttpClient } from 'public/support';
+import { IVirtualNode } from 'models/graph';
 
-const width = 960,
-    height = 500,
-    radius = Math.min(width, height) / 2;
-
-interface VirtualGraphProps {
+export interface VirtualGraphProps {
+    width: number;
+    height: number;
 }
 
-interface VirtualGraphState {
-    data: any;
+export interface VirtualGraphState {
+    nodes: HierarchyCircularNode<IVirtualNode>[];
+    zoomTransform: any;
 }
-
-const packLayout = pack<any>()
-    .size([width, height])
-    .padding(10);
 
 export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGraphState>  {
+    private packLayout: PackLayout<IVirtualNode>;
+    private zoom: ZoomBehavior<Element, {}>;
+    private svg: React.RefObject<SVGSVGElement>;
+
     constructor(props: VirtualGraphProps) {
         super(props);
+
         this.state = {
-            data: []
+            nodes: [],
+            zoomTransform: null
         };
+
+        this.packLayout = pack<IVirtualNode>()
+            .size([this.props.width, this.props.height])
+            .padding(10);
+
+        this.svg = React.createRef();
+
+        this.zoom = zoom()
+            .scaleExtent([-5, 5])
+            .on("zoom", this.zoomed.bind(this))
+    }
+
+
+    zoomed() {
+        this.setState({
+            zoomTransform: event.transform
+        });
     }
 
     componentDidMount() {
         const httpClient = new HttpClient();
         httpClient
-            .Get<any>('/api/data')
+            .Get<IVirtualNode>('/api/data')
             .subscribe(
                 (data) => {
+                    const root = hierarchy(data).sum(
+                        (datum: any) => datum.value + 1
+                    )
+                    this.packLayout(root);
                     this.setState({
-                        data: packLayout(data)
-                    })
+                        nodes: root.descendants()
+                    } as any);
                 }
             );
+
+        this.zoom(select(this.svg.current));
     }
 
     render() {
-        return <svg width={width} height={height}>
-            <g transform={`translate(${width / 2}, ${height / 2})`}>
-                {this.state.data.map(
-                    (d: any) => (
-                        <circle transform={`translate(${d.x}, ${d.y})`} fill='steelblue' opacity='0.25' >
-                            <text>
-                                {d.data.name}
-                            </text>
+        return <svg width={this.props.width}
+            height={this.props.height}
+            pointerEvents='all'
+            ref={this.svg} >
+            <g transform={this.state.zoomTransform}>
+                {this.state.nodes.map(
+                    (node, index) => <g transform={`translate(${node.x}, ${node.y})`} key={index} >
+                        <circle r={node.r} fill='steelblue' opacity='0.25'>
                         </circle>
-                    )
+                        <text dy="0.71em" textAnchor="end" >
+                            {node.data.name}
+                        </text>
+                    </g>
                 )}
             </g>
         </svg>
