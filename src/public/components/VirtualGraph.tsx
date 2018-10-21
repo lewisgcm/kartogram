@@ -6,21 +6,21 @@ import {
     event,
     select,
     ZoomBehavior,
+    ZoomTransform,
     PackLayout,
     HierarchyCircularNode
 } from 'd3';
-
 import { HttpClient } from 'public/support';
 import { IVirtualNode } from 'models/graph';
+
+interface VirtualGraphState {
+    nodes: HierarchyCircularNode<IVirtualNode>[];
+    zoomTransform: ZoomTransform;
+}
 
 export interface VirtualGraphProps {
     width: number;
     height: number;
-}
-
-export interface VirtualGraphState {
-    nodes: HierarchyCircularNode<IVirtualNode>[];
-    zoomTransform: any;
 }
 
 export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGraphState>  {
@@ -46,7 +46,6 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
             .scaleExtent([-5, 5])
             .on("zoom", this.zoomed.bind(this))
     }
-
 
     zoomed() {
         this.setState({
@@ -78,14 +77,14 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
             height={this.props.height}
             pointerEvents='all'
             ref={this.svg} >
-            <g transform={this.state.zoomTransform}>
+            <g transform={(this.state.zoomTransform || '').toString()}>
                 {this.state.nodes.map(
                     (node, index) => <g transform={`translate(${node.x}, ${node.y})`} key={index} >
-                        <circle r={node.r} fill='steelblue' opacity='0.25'>
+                        <circle
+                            r={node.r}
+                            fill='steelblue'
+                            opacity='0.25' >
                         </circle>
-                        <text dy="0.71em" textAnchor="end" >
-                            {node.data.name}
-                        </text>
                     </g>
                 )}
             </g>
