@@ -1,9 +1,15 @@
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
+const AwesomeTypescriptLoader = require('awesome-typescript-loader');
 
 var base_config = {
+    mode: 'development',
     devtool: "source-map",
     resolve: {
-        extensions: [ ".ts", ".tsx", ".js", ".json", ".html" ]
+        extensions: [ ".ts", ".tsx", ".js", ".json", ".html" ],
+        plugins: [
+            new AwesomeTypescriptLoader.TsConfigPathsPlugin()
+        ]
     },
     module: {
         rules: [
