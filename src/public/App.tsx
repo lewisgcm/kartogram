@@ -7,7 +7,7 @@ import {
     Typography
 } from '@material-ui/core';
 
-import { VirtualGraph } from "./components/VirtualGraph";
+import { VirtualGraph } from "./components/virtual-graph/VirtualGraph";
 import { HttpClient } from "public/support";
 import { IVirtualNode } from "models/graph";
 
@@ -15,8 +15,6 @@ const styles = require('./App.scss');
 const httpClient = new HttpClient();
 const dataSource = httpClient
     .Get<IVirtualNode>('/api/data');
-
-console.log( styles );
 
 class App extends React.Component {
     render() {

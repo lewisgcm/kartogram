@@ -10,12 +10,21 @@ import {
     PackLayout,
     HierarchyCircularNode
 } from 'd3';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
 import { IVirtualNode } from 'models/graph';
+
+const styles = require('./VirtualGraph.scss');
 
 interface VirtualGraphState {
     nodes: HierarchyCircularNode<IVirtualNode>[];
     zoomTransform: ZoomTransform;
+}
+
+interface GraphNodeHover {
+    node: IVirtualNode;
+    event: React.MouseEvent<SVGGElement>;
 }
 
 export interface VirtualGraphProps {
@@ -28,6 +37,7 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
     private packLayout: PackLayout<IVirtualNode>;
     private zoom: ZoomBehavior<Element, {}>;
     private svg: React.RefObject<SVGSVGElement>;
+    private eventSubject: Subject<GraphNodeHover>;
 
     constructor(props: VirtualGraphProps) {
         super(props);
@@ -45,7 +55,18 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
 
         this.zoom = zoom()
             .scaleExtent([-5, 5])
-            .on("zoom", this.zoomed.bind(this))
+            .on("zoom", this.zoomed.bind(this));
+
+        this.eventSubject = new Subject();
+        this.eventSubject
+            .pipe(
+                debounceTime( 500 )
+            )
+            .subscribe(
+                (event) => {
+                    console.log( event );
+                }
+            );
     }
 
     zoomed() {
@@ -72,6 +93,23 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
         this.zoom(select(this.svg.current));
     }
 
+    componentWillUnmount() {
+        this.eventSubject.complete();
+    }
+
+    handleMouseEvent(
+        event: React.MouseEvent<SVGGElement>,
+        index: number
+    ) {
+        event.persist();
+        this.eventSubject.next(
+            {
+                event: event,
+                node: this.state.nodes[index].data
+            }
+        );
+    }
+
     render() {
         return <svg width={this.props.width}
             height={this.props.height}
@@ -83,7 +121,10 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
                         <circle
                             r={node.r}
                             fill='steelblue'
-                            opacity='0.25' >
+                            opacity='0.25'
+                            onMouseEnter={(event) => this.handleMouseEvent(event, index)}
+                            onMouseLeave={(event) => this.handleMouseEvent(event, index)} 
+                            className={styles.circle} >
                         </circle>
                     </g>
                 )}
