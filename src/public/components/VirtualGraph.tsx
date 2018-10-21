@@ -10,7 +10,7 @@ import {
     PackLayout,
     HierarchyCircularNode
 } from 'd3';
-import { HttpClient } from 'public/support';
+import { Observable } from 'rxjs';
 import { IVirtualNode } from 'models/graph';
 
 interface VirtualGraphState {
@@ -21,9 +21,10 @@ interface VirtualGraphState {
 export interface VirtualGraphProps {
     width: number;
     height: number;
+    dataSource: Observable<IVirtualNode>;
 }
 
-export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGraphState>  {
+export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGraphState> {
     private packLayout: PackLayout<IVirtualNode>;
     private zoom: ZoomBehavior<Element, {}>;
     private svg: React.RefObject<SVGSVGElement>;
@@ -54,14 +55,13 @@ export class VirtualGraph extends React.Component<VirtualGraphProps, VirtualGrap
     }
 
     componentDidMount() {
-        const httpClient = new HttpClient();
-        httpClient
-            .Get<IVirtualNode>('/api/data')
+        this.props
+            .dataSource
             .subscribe(
                 (data) => {
                     const root = hierarchy(data).sum(
-                        (datum: any) => datum.value + 1
-                    )
+                        (node: IVirtualNode) => node.value + 1
+                    );
                     this.packLayout(root);
                     this.setState({
                         nodes: root.descendants()

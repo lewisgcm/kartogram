@@ -6,7 +6,7 @@ var base_config = {
     mode: 'development',
     devtool: "source-map",
     resolve: {
-        extensions: [ ".ts", ".tsx", ".js", ".json", ".html" ],
+        extensions: [ ".ts", ".tsx", ".js", ".json", ".html", ".css" ],
         plugins: [
             new AwesomeTypescriptLoader.TsConfigPathsPlugin()
         ]
@@ -20,12 +20,26 @@ var base_config = {
 };
 
 var ui = Object.assign({}, base_config, {
-    entry: './src/public/index.tsx',
+    entry: './src/public/App.tsx',
     output: {
         path: __dirname + "/build/public",
         filename: "bundle.js"
     },
     target: 'web',
+    module: {
+        rules: [
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+            {
+                test: /\.scss$/,
+                use: [
+                    'style-loader',
+                    { loader: 'css-loader', options: { sourceMap: true, modules: true, localIdentName: "[local]___[hash:base64:5]" } },
+                    'sass-loader'
+                ]
+            }
+        ]
+    },
     plugins: [
         new CopyWebpackPlugin([
             { from: 'public/index.html', context: 'src' }
